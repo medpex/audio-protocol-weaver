@@ -14,8 +14,8 @@ const History = () => {
   const handleDelete = (id: string) => {
     deleteTranscription(id);
     toast({
-      title: "Item deleted",
-      description: "The transcription has been removed from your history",
+      title: "Element gelöscht",
+      description: "Die Transkription wurde aus Ihrem Verlauf entfernt",
     });
   };
 
@@ -23,9 +23,9 @@ const History = () => {
     <MainLayout>
       <div className="max-w-6xl mx-auto">
         <div className="space-y-2 mb-8 text-center">
-          <h1 className="text-3xl font-semibold">History</h1>
+          <h1 className="text-3xl font-semibold">Verlauf</h1>
           <p className="text-muted-foreground">
-            Browse your past transcriptions and protocols
+            Durchsuchen Sie Ihre früheren Transkriptionen und Protokolle
           </p>
         </div>
         
@@ -42,10 +42,10 @@ const History = () => {
         ) : (
           <Alert className="bg-secondary/50 border-secondary">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>No history found</AlertTitle>
+            <AlertTitle>Kein Verlauf gefunden</AlertTitle>
             <AlertDescription>
-              You haven't created any transcriptions or protocols yet.
-              Go to the Dashboard to get started.
+              Sie haben noch keine Transkriptionen oder Protokolle erstellt.
+              Gehen Sie zum Dashboard, um loszulegen.
             </AlertDescription>
           </Alert>
         )}

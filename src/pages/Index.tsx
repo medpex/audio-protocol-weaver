@@ -42,8 +42,8 @@ const Index = () => {
   const handleTranscribe = async () => {
     if (!selectedFile) {
       toast({
-        title: "No file selected",
-        description: "Please upload an audio file first",
+        title: "Keine Datei ausgewählt",
+        description: "Bitte laden Sie zuerst eine Audiodatei hoch",
         variant: "destructive",
       });
       return;
@@ -51,8 +51,8 @@ const Index = () => {
 
     if (!apiKey) {
       toast({
-        title: "API Key Required",
-        description: "Please add your OpenAI API key in the Settings tab",
+        title: "API-Schlüssel erforderlich",
+        description: "Bitte fügen Sie Ihren OpenAI API-Schlüssel in den Einstellungen hinzu",
         variant: "destructive",
       });
       return;
@@ -78,18 +78,18 @@ const Index = () => {
       setCurrentTranscription(newItem);
       
       toast({
-        title: "Transcription completed",
-        description: "Audio has been successfully transcribed",
+        title: "Transkription abgeschlossen",
+        description: "Die Audio wurde erfolgreich transkribiert",
       });
       
       setProcessingStep('idle');
     } catch (error) {
-      console.error('Transcription error:', error);
+      console.error('Transkriptionsfehler:', error);
       setProcessingStep('idle');
       
       toast({
-        title: "Transcription failed",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
+        title: "Transkription fehlgeschlagen",
+        description: error instanceof Error ? error.message : "Ein unbekannter Fehler ist aufgetreten",
         variant: "destructive",
       });
     }
@@ -98,8 +98,8 @@ const Index = () => {
   const handleGenerateProtocol = async () => {
     if (!transcriptionText) {
       toast({
-        title: "No transcription",
-        description: "Please transcribe an audio file first",
+        title: "Keine Transkription",
+        description: "Bitte transkribieren Sie zuerst eine Audiodatei",
         variant: "destructive",
       });
       return;
@@ -107,8 +107,8 @@ const Index = () => {
 
     if (!apiKey) {
       toast({
-        title: "API Key Required",
-        description: "Please add your OpenAI API key in the Settings tab",
+        title: "API-Schlüssel erforderlich",
+        description: "Bitte fügen Sie Ihren OpenAI API-Schlüssel in den Einstellungen hinzu",
         variant: "destructive",
       });
       return;
@@ -136,18 +136,18 @@ const Index = () => {
       }
       
       toast({
-        title: "Protocol generated",
-        description: "Meeting protocol has been created successfully",
+        title: "Protokoll erstellt",
+        description: "Das Besprechungsprotokoll wurde erfolgreich erstellt",
       });
       
       setProcessingStep('completed');
     } catch (error) {
-      console.error('Protocol generation error:', error);
+      console.error('Fehler bei der Protokollerstellung:', error);
       setProcessingStep('idle');
       
       toast({
-        title: "Protocol generation failed",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
+        title: "Protokollerstellung fehlgeschlagen",
+        description: error instanceof Error ? error.message : "Ein unbekannter Fehler ist aufgetreten",
         variant: "destructive",
       });
     }
@@ -156,8 +156,8 @@ const Index = () => {
   const handleDownload = () => {
     if (!protocolText) {
       toast({
-        title: "No protocol",
-        description: "Please generate a protocol first",
+        title: "Kein Protokoll",
+        description: "Bitte erstellen Sie zuerst ein Protokoll",
         variant: "destructive",
       });
       return;
@@ -166,14 +166,14 @@ const Index = () => {
     const element = document.createElement('a');
     const file = new Blob([protocolText], {type: 'text/plain'});
     element.href = URL.createObjectURL(file);
-    element.download = `protocol-${selectedFile?.name || 'meeting'}.txt`;
+    element.download = `protokoll-${selectedFile?.name || 'besprechung'}.txt`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
     
     toast({
-      title: "Download started",
-      description: "Your protocol is being downloaded",
+      title: "Download gestartet",
+      description: "Ihr Protokoll wird heruntergeladen",
     });
   };
 
@@ -183,7 +183,7 @@ const Index = () => {
       return (
         <Button disabled className="gap-2">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Transcribing...
+          Transkribiere...
         </Button>
       );
     }
@@ -192,7 +192,7 @@ const Index = () => {
       return (
         <Button disabled className="gap-2">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Generating Protocol...
+          Erstelle Protokoll...
         </Button>
       );
     }
@@ -205,7 +205,7 @@ const Index = () => {
           className="gap-2"
         >
           <PlayCircle className="h-4 w-4" />
-          Start Transcription
+          Transkription starten
         </Button>
       );
     }
@@ -219,7 +219,7 @@ const Index = () => {
             className="gap-2"
           >
             <FileText className="h-4 w-4" />
-            Generate Protocol
+            Protokoll erstellen
           </Button>
         </div>
       );
@@ -233,7 +233,7 @@ const Index = () => {
             className="gap-2"
           >
             <Download className="h-4 w-4" />
-            Download Protocol
+            Protokoll herunterladen
           </Button>
         </div>
       );
@@ -249,7 +249,7 @@ const Index = () => {
         <div className="flex items-center gap-2 p-3 mt-6 bg-amber-50 border border-amber-200 rounded-lg">
           <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0" />
           <p className="text-sm text-amber-700">
-            Please add your OpenAI API key in the Settings tab to use the transcription service.
+            Bitte fügen Sie Ihren OpenAI API-Schlüssel in den Einstellungen hinzu, um den Transkriptionsdienst nutzen zu können.
           </p>
         </div>
       );
@@ -261,9 +261,9 @@ const Index = () => {
     <MainLayout>
       <div className="max-w-4xl mx-auto">
         <div className="space-y-2 mb-8 text-center">
-          <h1 className="text-3xl font-semibold">Meeting Protocol Generator</h1>
+          <h1 className="text-3xl font-semibold">Besprechungsprotokoll-Generator</h1>
           <p className="text-muted-foreground">
-            Upload an audio recording of your meeting to generate a professional written protocol
+            Laden Sie eine Audioaufnahme Ihrer Besprechung hoch, um ein professionelles schriftliches Protokoll zu erstellen
           </p>
         </div>
         
@@ -282,7 +282,7 @@ const Index = () => {
             
             {protocolText && (
               <div className="mt-8 p-4 bg-secondary/30 rounded-lg max-h-80 overflow-y-auto subtle-scrollbar">
-                <h3 className="text-xl font-semibold mb-2">Generated Protocol</h3>
+                <h3 className="text-xl font-semibold mb-2">Erstelltes Protokoll</h3>
                 <div className="whitespace-pre-line">
                   {protocolText}
                 </div>

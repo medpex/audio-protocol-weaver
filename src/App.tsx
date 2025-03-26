@@ -3,9 +3,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AppProvider } from "./context/AppContext";
 import { AnimatePresence } from "framer-motion";
+import PageTransition from "./components/ui/PageTransition";
 
 import Index from "./pages/Index";
 import Settings from "./pages/Settings";
@@ -14,6 +15,38 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Wrapper-Komponente für die AnimatePresence und PageTransition
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={
+          <PageTransition>
+            <Index />
+          </PageTransition>
+        } />
+        <Route path="/settings" element={
+          <PageTransition>
+            <Settings />
+          </PageTransition>
+        } />
+        <Route path="/history" element={
+          <PageTransition>
+            <History />
+          </PageTransition>
+        } />
+        <Route path="*" element={
+          <PageTransition>
+            <NotFound />
+          </PageTransition>
+        } />
+      </Routes>
+    </AnimatePresence>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AppProvider>
@@ -21,14 +54,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AnimatePresence mode="wait">
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/history" element={<History />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AnimatePresence>
+          <AnimatedRoutes />
         </BrowserRouter>
       </TooltipProvider>
     </AppProvider>

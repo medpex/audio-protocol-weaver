@@ -20,8 +20,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   
   const navItems = [
     { label: 'Dashboard', path: '/', icon: LayoutDashboard },
-    { label: 'Settings', path: '/settings', icon: Settings },
-    { label: 'History', path: '/history', icon: Clock },
+    { label: 'Einstellungen', path: '/settings', icon: Settings },
+    { label: 'Verlauf', path: '/history', icon: Clock },
   ];
   
   // Get the active index for the tab indicator
@@ -54,7 +54,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <div className="relative p-1.5 rounded-lg bg-primary/10">
                 <FileAudio className="h-5 w-5 text-primary" />
               </div>
-              <span className="font-semibold text-lg tracking-tight">AudioProtocol</span>
+              <span className="font-semibold text-lg tracking-tight">AudioProtokoll</span>
             </Link>
             
             {/* Navigation */}
@@ -100,7 +100,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       {/* Footer */}
       <footer className="mt-auto py-6 text-center text-sm text-muted-foreground">
         <div className="container mx-auto px-4">
-          <p>AudioProtocol &copy; {new Date().getFullYear()} • All rights reserved</p>
+          <p>AudioProtokoll &copy; {new Date().getFullYear()} • Alle Rechte vorbehalten</p>
         </div>
       </footer>
     </div>

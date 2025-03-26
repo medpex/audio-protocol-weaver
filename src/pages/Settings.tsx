@@ -21,18 +21,18 @@ const Settings = () => {
     setCustomPrompt(customPromptInput);
     
     toast({
-      title: "Settings saved",
-      description: "Your changes have been saved successfully",
+      title: "Einstellungen gespeichert",
+      description: "Ihre Änderungen wurden erfolgreich gespeichert",
     });
   };
 
   const resetToDefaultPrompt = () => {
-    const defaultPrompt = "Transform this meeting transcription into a formal protocol. Include all main discussion points, decisions made, and action items with responsible persons. Format it in a professional structure with headers, date, attendees, and a clear summary.";
+    const defaultPrompt = "Wandle diese Besprechungstranskription in ein formales Protokoll um. Füge alle wichtigen Diskussionspunkte, getroffene Entscheidungen und Aufgaben mit verantwortlichen Personen ein. Formatiere es in einer professionellen Struktur mit Überschriften, Datum, Teilnehmern und einer klaren Zusammenfassung.";
     
     setCustomPromptInput(defaultPrompt);
     toast({
-      title: "Default prompt restored",
-      description: "The custom prompt has been reset to the default value",
+      title: "Standardaufforderung wiederhergestellt",
+      description: "Die benutzerdefinierte Aufforderung wurde auf den Standardwert zurückgesetzt",
     });
   };
 
@@ -40,9 +40,9 @@ const Settings = () => {
     <MainLayout>
       <div className="max-w-3xl mx-auto">
         <div className="space-y-2 mb-8 text-center">
-          <h1 className="text-3xl font-semibold">Settings</h1>
+          <h1 className="text-3xl font-semibold">Einstellungen</h1>
           <p className="text-muted-foreground">
-            Manage your API keys and customize the protocol format
+            Verwalten Sie Ihre API-Schlüssel und passen Sie das Protokollformat an
           </p>
         </div>
         
@@ -51,16 +51,16 @@ const Settings = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Key className="h-5 w-5" />
-                API Key
+                API-Schlüssel
               </CardTitle>
               <CardDescription>
-                Enter your OpenAI API key to use the transcription and protocol generation services
+                Geben Sie Ihren OpenAI API-Schlüssel ein, um die Transkriptions- und Protokollerstellungsdienste zu nutzen
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="apiKey">OpenAI API Key</Label>
+                  <Label htmlFor="apiKey">OpenAI API-Schlüssel</Label>
                   <Input
                     id="apiKey"
                     type="password"
@@ -70,7 +70,7 @@ const Settings = () => {
                     className="glass-input"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Your API key is stored securely in your browser's local storage and is never sent to our servers.
+                    Ihr API-Schlüssel wird sicher im lokalen Speicher Ihres Browsers gespeichert und niemals an unsere Server gesendet.
                   </p>
                 </div>
               </div>
@@ -81,21 +81,21 @@ const Settings = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Wand2 className="h-5 w-5" />
-                Custom Prompt
+                Benutzerdefinierte Anweisung
               </CardTitle>
               <CardDescription>
-                Customize how the AI transforms transcriptions into protocols
+                Passen Sie an, wie die KI Transkriptionen in Protokolle umwandelt
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="customPrompt">Protocol Generation Prompt</Label>
+                  <Label htmlFor="customPrompt">Anweisung zur Protokollerstellung</Label>
                   <Textarea
                     id="customPrompt"
                     value={customPromptInput}
                     onChange={(e) => setCustomPromptInput(e.target.value)}
-                    placeholder="Enter your custom prompt instructions..."
+                    placeholder="Geben Sie Ihre benutzerdefinierten Anweisungen ein..."
                     className="glass-input min-h-[160px]"
                   />
                   <div className="flex justify-end mt-2">
@@ -104,7 +104,7 @@ const Settings = () => {
                       size="sm"
                       onClick={resetToDefaultPrompt}
                     >
-                      Reset to default
+                      Auf Standard zurücksetzen
                     </Button>
                   </div>
                 </div>
@@ -118,7 +118,7 @@ const Settings = () => {
               className="gap-2"
             >
               <Save className="h-4 w-4" />
-              Save Settings
+              Einstellungen speichern
             </Button>
           </div>
         </div>
