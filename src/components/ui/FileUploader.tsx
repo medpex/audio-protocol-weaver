@@ -1,0 +1,152 @@
+
+import React, { useState, useRef } from 'react';
+import { FileAudio, Upload, X } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+interface FileUploaderProps {
+  onFileSelected: (file: File) => void;
+  disabled?: boolean;
+}
+
+const FileUploader: React.FC<FileUploaderProps> = ({ onFileSelected, disabled = false }) => {
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
+  // Allowed audio file types
+  const allowedTypes = [
+    'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/wave', 
+    'audio/x-wav', 'audio/x-m4a', 'audio/mp4', 'audio/aac',
+    'audio/ogg', 'audio/webm', 'audio/flac'
+  ];
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (!disabled) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    if (disabled) return;
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      validateAndProcessFile(file);
+    }
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled) return;
+    
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      validateAndProcessFile(file);
+    }
+  };
+
+  const validateAndProcessFile = (file: File) => {
+    // Check if file is an audio file
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an audio file (MP3, WAV, M4A, etc.)",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Check file size (100MB limit)
+    if (file.size > 100 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Audio file must be less than 100MB",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setSelectedFile(file);
+    onFileSelected(file);
+  };
+
+  const handleClearFile = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  return (
+    <div className="w-full">
+      <div
+        className={`drop-zone relative border-2 border-dashed rounded-2xl p-12 text-center transition-all cursor-pointer ${
+          isDragging ? 'active' : ''
+        } ${disabled ? 'opacity-60 cursor-not-allowed' : 'hover:bg-secondary/50'}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={() => !disabled && !selectedFile && fileInputRef.current?.click()}
+      >
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileInput}
+          className="hidden"
+          accept="audio/*"
+          disabled={disabled}
+        />
+        
+        <div className="flex flex-col items-center justify-center gap-4">
+          {selectedFile ? (
+            <>
+              <div className="relative flex items-center justify-center w-16 h-16 mb-2 bg-primary/10 rounded-full">
+                <FileAudio className="w-8 h-8 text-primary" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-lg font-medium">{selectedFile.name}</span>
+                <span className="text-sm text-muted-foreground">
+                  {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                </span>
+              </div>
+              <button 
+                onClick={(e) => { 
+                  e.stopPropagation();
+                  handleClearFile();
+                }}
+                className="mt-2 p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors"
+                disabled={disabled}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="relative flex items-center justify-center w-16 h-16 mb-2 bg-primary/10 rounded-full animate-float">
+                <Upload className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-medium">Drag & drop your audio file</h3>
+              <p className="text-muted-foreground text-sm mb-2">
+                or click to browse from your device
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Supports MP3, WAV, M4A and other audio formats (max 100MB)
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default FileUploader;
