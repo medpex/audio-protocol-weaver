@@ -10,6 +10,8 @@ import {
 import FileUploader from '@/components/ui/FileUploader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Progress } from '@/components/ui/progress';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAppContext } from '@/context/AppContext';
 import { useToast } from '@/hooks/use-toast';
@@ -23,9 +25,11 @@ const Index = () => {
   
   const { 
     apiKey, 
-    customPrompt, 
-    addTranscription, 
-    setCurrentTranscription 
+    customPrompt,
+    addTranscription,
+    updateTranscription,
+    currentTranscription,
+    setCurrentTranscription
   } = useAppContext();
   
   const { toast } = useToast();
@@ -121,18 +125,13 @@ const Index = () => {
       setProtocolText(protocol);
       
       // Update the current item with the generated protocol
-      if (selectedFile) {
-        const updatedItem = {
-          id: generateId(),
-          fileName: selectedFile.name,
-          dateCreated: new Date(),
-          transcription: transcriptionText,
-          protocol: protocol,
+      if (currentTranscription) {
+        const updates = {
+          protocol,
           status: 'completed' as const,
         };
-        
-        addTranscription(updatedItem);
-        setCurrentTranscription(updatedItem);
+        updateTranscription(currentTranscription.id, updates);
+        setCurrentTranscription({ ...currentTranscription, ...updates });
       }
       
       toast({
@@ -269,17 +268,34 @@ const Index = () => {
         
         <Card className="glass-panel overflow-hidden">
           <CardContent className="p-6">
-            <FileUploader 
-              onFileSelected={handleFileSelected} 
-              disabled={processingStep === 'transcribing' || processingStep === 'generating'} 
+            <FileUploader
+              onFileSelected={handleFileSelected}
+              disabled={processingStep === 'transcribing' || processingStep === 'generating'}
             />
-            
+
             {renderApiKeyWarning()}
-            
+
+            {(processingStep === 'transcribing' || processingStep === 'generating') && (
+              <div className="mt-4">
+                <Progress value={processingStep === 'transcribing' ? 40 : 80} />
+              </div>
+            )}
+
             <div className="mt-6 flex justify-center">
               {renderActionButtons()}
             </div>
-            
+
+            {transcriptionText && !protocolText && (
+              <div className="mt-8 space-y-2">
+                <h3 className="text-xl font-semibold">Transkription bearbeiten</h3>
+                <Textarea
+                  value={transcriptionText}
+                  onChange={(e) => setTranscriptionText(e.target.value)}
+                  className="min-h-[160px] subtle-scrollbar"
+                />
+              </div>
+            )}
+
             {protocolText && (
               <div className="mt-8 p-4 bg-secondary/30 rounded-lg max-h-80 overflow-y-auto subtle-scrollbar">
                 <h3 className="text-xl font-semibold mb-2">Erstelltes Protokoll</h3>

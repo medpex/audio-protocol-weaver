@@ -1,0 +1,1 @@
+export const DEFAULT_PROMPT = "Wandle diese Besprechungstranskription in ein formales Protokoll um. F\u00fcge alle wichtigen Diskussionspunkte, getroffene Entscheidungen und Aufgaben mit verantwortlichen Personen ein. Formatiere es in einer professionellen Struktur mit \u00dcberschriften, Datum, Teilnehmern und einer klaren Zusammenfassung.";
