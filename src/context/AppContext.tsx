@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { DEFAULT_PROMPT } from '../constants';
 
 type TranscriptionStatus = 'idle' | 'uploading' | 'transcribing' | 'generating' | 'completed' | 'error';
 
@@ -36,8 +37,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
   
   const [customPrompt, setCustomPrompt] = useState<string>(() => {
-    return localStorage.getItem('custom_prompt') || 
-      'Transform this meeting transcription into a formal protocol. Include all main discussion points, decisions made, and action items with responsible persons. Format it in a professional structure with headers, date, attendees, and a clear summary.';
+    return localStorage.getItem('custom_prompt') || DEFAULT_PROMPT;
   });
 
   const [transcriptions, setTranscriptions] = useState<TranscriptionItem[]>(() => {

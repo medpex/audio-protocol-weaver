@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { DEFAULT_PROMPT } from '../constants';
 import { Key, Wand2, Save } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -27,9 +28,7 @@ const Settings = () => {
   };
 
   const resetToDefaultPrompt = () => {
-    const defaultPrompt = "Wandle diese Besprechungstranskription in ein formales Protokoll um. Füge alle wichtigen Diskussionspunkte, getroffene Entscheidungen und Aufgaben mit verantwortlichen Personen ein. Formatiere es in einer professionellen Struktur mit Überschriften, Datum, Teilnehmern und einer klaren Zusammenfassung.";
-    
-    setCustomPromptInput(defaultPrompt);
+    setCustomPromptInput(DEFAULT_PROMPT);
     toast({
       title: "Standardaufforderung wiederhergestellt",
       description: "Die benutzerdefinierte Aufforderung wurde auf den Standardwert zurückgesetzt",
