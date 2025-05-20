@@ -23,9 +23,11 @@ const Index = () => {
   
   const { 
     apiKey, 
-    customPrompt, 
-    addTranscription, 
-    setCurrentTranscription 
+    customPrompt,
+    addTranscription,
+    updateTranscription,
+    currentTranscription,
+    setCurrentTranscription
   } = useAppContext();
   
   const { toast } = useToast();
@@ -121,18 +123,13 @@ const Index = () => {
       setProtocolText(protocol);
       
       // Update the current item with the generated protocol
-      if (selectedFile) {
-        const updatedItem = {
-          id: generateId(),
-          fileName: selectedFile.name,
-          dateCreated: new Date(),
-          transcription: transcriptionText,
-          protocol: protocol,
+      if (currentTranscription) {
+        const updates = {
+          protocol,
           status: 'completed' as const,
         };
-        
-        addTranscription(updatedItem);
-        setCurrentTranscription(updatedItem);
+        updateTranscription(currentTranscription.id, updates);
+        setCurrentTranscription({ ...currentTranscription, ...updates });
       }
       
       toast({
