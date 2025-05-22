@@ -14,11 +14,11 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFileSelected, disabled = 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Allowed audio file types
+  // Erlaubte Audio-Dateitypen - inkl. webm
   const allowedTypes = [
     'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/wave', 
     'audio/x-wav', 'audio/x-m4a', 'audio/mp4', 'audio/aac',
-    'audio/ogg', 'audio/webm', 'audio/flac'
+    'audio/ogg', 'audio/webm', 'audio/flac', 'video/webm'
   ];
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -55,21 +55,21 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFileSelected, disabled = 
   };
 
   const validateAndProcessFile = (file: File) => {
-    // Check if file is an audio file
+    // Überprüfen, ob die Datei ein Audio/Video-Format ist
     if (!allowedTypes.includes(file.type)) {
       toast({
-        title: "Invalid file type",
-        description: "Please upload an audio file (MP3, WAV, M4A, etc.)",
+        title: "Ungültiger Dateityp",
+        description: "Bitte laden Sie eine Audiodatei hoch (MP3, WAV, M4A, WEBM, etc.)",
         variant: "destructive"
       });
       return;
     }
     
-    // Check file size (100MB limit)
+    // Dateigrößenprüfung (100MB Limit für Uploadgröße, später werden große Dateien aufgeteilt)
     if (file.size > 100 * 1024 * 1024) {
       toast({
-        title: "File too large",
-        description: "Audio file must be less than 100MB",
+        title: "Datei zu groß",
+        description: "Audiodatei muss kleiner als 100MB sein",
         variant: "destructive"
       });
       return;
@@ -102,7 +102,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFileSelected, disabled = 
           ref={fileInputRef}
           onChange={handleFileInput}
           className="hidden"
-          accept="audio/*"
+          accept="audio/*,video/webm"
           disabled={disabled}
         />
         
@@ -134,12 +134,12 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFileSelected, disabled = 
               <div className="relative flex items-center justify-center w-16 h-16 mb-2 bg-primary/10 rounded-full animate-float">
                 <Upload className="w-8 h-8 text-primary" />
               </div>
-              <h3 className="text-lg font-medium">Drag & drop your audio file</h3>
+              <h3 className="text-lg font-medium">Drag & drop deine Audiodatei</h3>
               <p className="text-muted-foreground text-sm mb-2">
-                or click to browse from your device
+                oder klicke, um eine Datei auszuwählen
               </p>
               <p className="text-xs text-muted-foreground">
-                Supports MP3, WAV, M4A and other audio formats (max 100MB)
+                Unterstützt MP3, WAV, M4A, WEBM und andere Audioformate (max 100MB)
               </p>
             </>
           )}

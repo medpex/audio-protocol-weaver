@@ -1,4 +1,6 @@
 
+import { splitAudioFile, processAudioFile, combineTranscriptions } from '@/utils/audioUtils';
+
 // Helper for generating a unique ID
 const generateId = (): string => {
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
@@ -10,29 +12,63 @@ export const transcribeAudio = async (
   apiKey: string
 ): Promise<string> => {
   try {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('model', 'whisper-1');
-    formData.append('response_format', 'text');
-
-    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `Error: ${response.status} ${response.statusText}`);
+    console.log('Starte Transkription für:', file.name, 'Größe:', Math.round(file.size / (1024 * 1024)), 'MB');
+    
+    // Verarbeite die Audiodatei (Konvertierung etc. falls nötig)
+    const processedFile = await processAudioFile(file);
+    
+    // Teile die Datei in kleinere Stücke, wenn sie zu groß ist (max. 25MB pro Stück für OpenAI API)
+    const audioChunks = await splitAudioFile(processedFile, 24);
+    
+    console.log(`Datei in ${audioChunks.length} Teile aufgeteilt`);
+    
+    // Wenn nur ein Chunk, führe normale Transkription durch
+    if (audioChunks.length === 1) {
+      return await transcribeChunk(audioChunks[0], apiKey);
     }
-
-    return await response.text();
+    
+    // Andernfalls transkribiere jeden Chunk einzeln und kombiniere die Ergebnisse
+    const transcriptionPromises = audioChunks.map((chunk, index) => {
+      console.log(`Transkribiere Teil ${index + 1}/${audioChunks.length}...`);
+      return transcribeChunk(chunk, apiKey);
+    });
+    
+    const chunkTranscriptions = await Promise.all(transcriptionPromises);
+    return combineTranscriptions(chunkTranscriptions);
+    
   } catch (error) {
-    console.error('Transcription error:', error);
+    console.error('Transkriptionsfehler:', error);
     throw error;
   }
+};
+
+// Transkribiert einen einzelnen Audio-Chunk
+const transcribeChunk = async (audioChunk: Blob, apiKey: string): Promise<string> => {
+  const formData = new FormData();
+  
+  // Konvertiere Blob zu File, wenn es ein Blob ist
+  const chunkFile = audioChunk instanceof File 
+    ? audioChunk 
+    : new File([audioChunk], 'chunk.webm', { type: audioChunk.type });
+  
+  formData.append('file', chunkFile);
+  formData.append('model', 'whisper-1');
+  formData.append('response_format', 'text');
+
+  const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || `Fehler: ${response.status} ${response.statusText}`);
+  }
+
+  return await response.text();
 };
 
 // Generate meeting protocol from transcription text
@@ -67,13 +103,13 @@ export const generateProtocol = async (
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error?.message || `Error: ${response.status} ${response.statusText}`);
+      throw new Error(errorData.error?.message || `Fehler: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
-    return data.choices[0]?.message?.content || 'No content returned';
+    return data.choices[0]?.message?.content || 'Kein Inhalt zurückgegeben';
   } catch (error) {
-    console.error('Protocol generation error:', error);
+    console.error('Protokollgenerierungsfehler:', error);
     throw error;
   }
 };

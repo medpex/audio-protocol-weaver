@@ -12,6 +12,8 @@ export interface TranscriptionItem {
   protocol: string;
   status: TranscriptionStatus;
   error?: string;
+  chunkCount?: number;
+  processedChunks?: number;
 }
 
 interface AppContextType {
@@ -42,13 +44,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [transcriptions, setTranscriptions] = useState<TranscriptionItem[]>(() => {
     const savedTranscriptions = localStorage.getItem('transcriptions');
-    return savedTranscriptions ? JSON.parse(savedTranscriptions) : [];
+    if (savedTranscriptions) {
+      try {
+        const parsed = JSON.parse(savedTranscriptions);
+        // Konvertiere String-Datumswerte zurück zu Date-Objekten
+        return parsed.map((item: any) => ({
+          ...item,
+          dateCreated: new Date(item.dateCreated)
+        }));
+      } catch (e) {
+        console.error('Fehler beim Parsen der gespeicherten Transkriptionen:', e);
+        return [];
+      }
+    }
+    return [];
   });
 
   const [currentTranscription, setCurrentTranscription] = useState<TranscriptionItem | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  // Save settings to localStorage when they change
+  // Einstellungen im localStorage speichern
   useEffect(() => {
     localStorage.setItem('openai_api_key', apiKey);
   }, [apiKey]);
@@ -100,7 +115,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 export const useAppContext = () => {
   const context = useContext(AppContext);
   if (context === undefined) {
-    throw new Error('useAppContext must be used within an AppProvider');
+    throw new Error('useAppContext muss innerhalb eines AppProviders verwendet werden');
   }
   return context;
 };
