@@ -20,9 +20,9 @@ export const transcribeAudio = async (
     if (onProgressUpdate) onProgressUpdate(5, 'Verarbeite Audiodatei...');
     const processedFile = await processAudioFile(file);
     
-    // Teile die Datei in kleinere Stücke, wenn sie zu groß ist (max. 25MB pro Stück für OpenAI API)
+    // Teile die Datei in kleinere Stücke, falls sie zu groß ist
     if (onProgressUpdate) onProgressUpdate(10, 'Teile Datei in Chunks...');
-    const audioChunks = await splitAudioFile(processedFile, 24);
+    const audioChunks = await splitAudioFile(processedFile);
     
     console.log(`Datei in ${audioChunks.length} Teile aufgeteilt`);
     
@@ -72,9 +72,9 @@ const transcribeChunk = async (audioChunk: Blob, apiKey: string, retries = 3): P
       const formData = new FormData();
       
       // Konvertiere Blob zu File, wenn es ein Blob ist
-      const chunkFile = audioChunk instanceof File 
-        ? audioChunk 
-        : new File([audioChunk], 'chunk.webm', { type: audioChunk.type });
+      const chunkFile = audioChunk instanceof File
+        ? audioChunk
+        : new File([audioChunk], 'chunk.mp3', { type: audioChunk.type });
       
       formData.append('file', chunkFile);
       formData.append('model', 'whisper-1');
