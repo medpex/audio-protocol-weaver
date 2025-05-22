@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { DEFAULT_PROMPT } from '../constants';
 
@@ -14,6 +13,8 @@ export interface TranscriptionItem {
   error?: string;
   chunkCount?: number;
   processedChunks?: number;
+  progressMessage?: string;
+  progressPercent?: number;
 }
 
 interface AppContextType {
@@ -84,10 +85,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTranscriptions((prev) =>
       prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
     );
+    
+    // Aktualisiere auch das aktuelle Transkriptionsobjekt, wenn es dasselbe ist
+    if (currentTranscription?.id === id) {
+      setCurrentTranscription(prev => prev ? { ...prev, ...updates } : null);
+    }
   };
 
   const deleteTranscription = (id: string) => {
     setTranscriptions((prev) => prev.filter((item) => item.id !== id));
+    if (currentTranscription?.id === id) {
+      setCurrentTranscription(null);
+    }
   };
 
   return (

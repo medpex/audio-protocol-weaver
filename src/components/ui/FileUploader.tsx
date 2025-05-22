@@ -65,14 +65,22 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFileSelected, disabled = 
       return;
     }
     
-    // Dateigrößenprüfung (100MB Limit für Uploadgröße, später werden große Dateien aufgeteilt)
-    if (file.size > 100 * 1024 * 1024) {
+    // Dateigrößenprüfung (1GB Limit für Uploadgröße, später werden große Dateien aufgeteilt)
+    if (file.size > 1024 * 1024 * 1024) {
       toast({
         title: "Datei zu groß",
-        description: "Audiodatei muss kleiner als 100MB sein",
+        description: "Audiodatei muss kleiner als 1GB sein",
         variant: "destructive"
       });
       return;
+    }
+    
+    if (file.size > 700 * 1024 * 1024) {
+      toast({
+        title: "Sehr große Datei",
+        description: "Die Verarbeitung kann einige Zeit dauern und mehr Ressourcen benötigen",
+        variant: "warning"
+      });
     }
     
     setSelectedFile(file);
@@ -83,6 +91,14 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFileSelected, disabled = 
     setSelectedFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+
+  const formatFileSize = (size: number) => {
+    if (size < 1024 * 1024) {
+      return `${(size / 1024).toFixed(2)} KB`;
+    } else {
+      return `${(size / (1024 * 1024)).toFixed(2)} MB`;
     }
   };
 
@@ -115,7 +131,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFileSelected, disabled = 
               <div className="flex flex-col gap-1">
                 <span className="text-lg font-medium">{selectedFile.name}</span>
                 <span className="text-sm text-muted-foreground">
-                  {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                  {formatFileSize(selectedFile.size)}
+                  {selectedFile.size > 500 * 1024 * 1024 && (
+                    <span className="ml-2 text-amber-500">(Große Datei)</span>
+                  )}
                 </span>
               </div>
               <button 
@@ -139,7 +158,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFileSelected, disabled = 
                 oder klicke, um eine Datei auszuwählen
               </p>
               <p className="text-xs text-muted-foreground">
-                Unterstützt MP3, WAV, M4A, WEBM und andere Audioformate (max 100MB)
+                Unterstützt MP3, WAV, M4A, WEBM und andere Audioformate (max 1GB)
+              </p>
+              <p className="text-xs text-amber-500 mt-2">
+                Hinweis: Große Dateien (>700MB) werden automatisch aufgeteilt und können eine längere Verarbeitungszeit benötigen
               </p>
             </>
           )}
