@@ -3,6 +3,19 @@
  * Audio-Verarbeitungsutilitäten für die Transkription großer Dateien
  */
 
+import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
+
+// Globale Instanz von ffmpeg, um wiederholtes Laden zu vermeiden
+const ffmpeg = createFFmpeg({ log: false });
+let ffmpegLoaded = false;
+
+const loadFFmpeg = async () => {
+  if (!ffmpegLoaded) {
+    await ffmpeg.load();
+    ffmpegLoaded = true;
+  }
+};
+
 /**
  * Teilt eine große Audiodatei in kleinere Chunks für die API-Verarbeitung
  * @param file Die zu teilende Audiodatei
@@ -11,38 +24,78 @@
  */
 export const splitAudioFile = async (
   file: File,
-  maxSizeInMB: number = 24
+  maxSizeInMB: number = 24.5
 ): Promise<Blob[]> => {
-  // Wenn die Datei bereits klein genug ist, direkt zurückgeben
   if (file.size <= maxSizeInMB * 1024 * 1024) {
     return [file];
   }
 
-  // Fortgeschrittene Audioverarbeitung für sehr große Dateien
-  console.log(`Teile große Datei (${Math.round(file.size / (1024 * 1024))} MB) in ${maxSizeInMB}MB-Chunks`);
-  
-  try {
-    const arrayBuffer = await file.arrayBuffer();
-    const chunkSize = maxSizeInMB * 1024 * 1024;
-    const chunks: Blob[] = [];
-    
-    // Teile die Datei in Stücke der maximalen Größe
-    for (let i = 0; i < arrayBuffer.byteLength; i += chunkSize) {
-      const chunk = arrayBuffer.slice(i, Math.min(i + chunkSize, arrayBuffer.byteLength));
-      chunks.push(new Blob([chunk], { type: file.type }));
-      
-      // Gib Speicher frei, um Out-of-Memory-Fehler zu vermeiden
-      if (i % (10 * chunkSize) === 0 && i > 0) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+  console.log(
+    `Teile große Datei (${Math.round(file.size / (1024 * 1024))} MB) in Chunks unter ${maxSizeInMB} MB`
+  );
+
+  await loadFFmpeg();
+
+  ffmpeg.FS('writeFile', 'input.mp3', await fetchFile(file));
+
+  let segmentTime = 600; // Starte mit 10 Minuten
+  let attempts = 0;
+  let chunks: File[] = [];
+
+  while (attempts < 5) {
+    await ffmpeg.run(
+      '-i',
+      'input.mp3',
+      '-f',
+      'segment',
+      '-segment_time',
+      String(segmentTime),
+      '-c',
+      'copy',
+      'chunk_%03d.mp3'
+    );
+
+    chunks = [];
+    let index = 0;
+    let oversize = false;
+
+    while (true) {
+      const name = `chunk_${index.toString().padStart(3, '0')}.mp3`;
+      try {
+        const data = ffmpeg.FS('readFile', name);
+        const chunkFile = new File([data.buffer], name, { type: 'audio/mpeg' });
+        if (chunkFile.size > maxSizeInMB * 1024 * 1024) {
+          oversize = true;
+        }
+        chunks.push(chunkFile);
+        ffmpeg.FS('unlink', name);
+        index++;
+      } catch {
+        break;
       }
     }
-    
-    console.log(`Erfolgreich in ${chunks.length} Chunks aufgeteilt`);
-    return chunks;
-  } catch (error) {
-    console.error('Fehler beim Aufteilen der Audiodatei:', error);
-    throw new Error('Die Audiodatei konnte nicht verarbeitet werden. Bitte versuchen Sie eine kleinere Datei oder ein anderes Format.');
+
+    if (!oversize) {
+      break;
+    }
+
+    // Falls ein Chunk zu groß ist, verringere die Segmentdauer und versuche es erneut
+    chunks.forEach((c) => {
+      try {
+        ffmpeg.FS('unlink', c.name);
+      } catch {
+        // ignore
+      }
+    });
+
+    segmentTime = Math.max(Math.floor(segmentTime / 2), 60); // mindestens 1 Minute
+    attempts++;
   }
+
+  ffmpeg.FS('unlink', 'input.mp3');
+
+  console.log(`Erfolgreich in ${chunks.length} Chunks aufgeteilt`);
+  return chunks.length > 0 ? chunks : [file];
 };
 
 /**
@@ -61,17 +114,25 @@ export const estimateProcessingTime = (fileSizeInMB: number): number => {
  * das von der Whisper API besser unterstützt wird (falls nötig)
  */
 export const processAudioFile = async (file: File): Promise<File> => {
-  // Die Whisper API unterstützt WEBM-Dateien nativ, daher ist keine Konvertierung erforderlich
-  // In einer vollständigen Produktionsimplementierung könnte hier eine Qualitätsoptimierung oder
-  // Formatkonvertierung stattfinden, falls bestimmte WEBM-Codecs nicht optimal unterstützt werden
-  
-  // Überprüfe auf extrem große Dateien und warne den Benutzer
   const fileSizeInMB = file.size / (1024 * 1024);
   if (fileSizeInMB > 500) {
     console.warn(`Sehr große Datei (${Math.round(fileSizeInMB)} MB) - Die Verarbeitung kann einige Zeit dauern`);
   }
-  
-  return file;
+
+  if (file.type === 'audio/mpeg' || file.name.toLowerCase().endsWith('.mp3')) {
+    return file;
+  }
+
+  await loadFFmpeg();
+
+  ffmpeg.FS('writeFile', 'input', await fetchFile(file));
+  await ffmpeg.run('-i', 'input', '-ar', '44100', 'output.mp3');
+  const data = ffmpeg.FS('readFile', 'output.mp3');
+
+  ffmpeg.FS('unlink', 'input');
+  ffmpeg.FS('unlink', 'output.mp3');
+
+  return new File([data.buffer], file.name.replace(/\.[^/.]+$/, '.mp3'), { type: 'audio/mpeg' });
 };
 
 /**
