@@ -31,3 +31,7 @@ Das gebaute Projekt befindet sich anschließend im Ordner `dist` und kann von ei
 ## Hinweise zum Datenschutz
 
 Alle Transkriptionen und generierten Protokolle verbleiben in Ihrem Browser. Es werden keine Daten an andere Server als die OpenAI‑API gesendet. Der API‑Schlüssel wird lokal gespeichert und kann jederzeit über die Einstellungen gelöscht werden.
+
+## Verarbeitung großer Audiodateien
+
+Beim Hochladen einer Datei wird sie automatisch in das MP3-Format umgewandelt, sofern sie nicht bereits im MP3-Format vorliegt. Überschreitet die konvertierte Datei eine Größe von 24,5 MB, wird sie mit Hilfe von ffmpeg in mehrere MP3-Chunks unterhalb dieser Grenze aufgeteilt. Diese Teilstücke werden einzeln an die OpenAI-API gesendet und die erhaltenen Texte anschließend zu einer vollständigen Transkription zusammengefügt.
