@@ -2,8 +2,10 @@
 /**
  * Audio-Verarbeitungsutilitäten für die Transkription großer Dateien
  */
+
 import { createFFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
+import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
 
 // Globale Instanz von ffmpeg, um wiederholtes Laden zu vermeiden
 const ffmpeg = createFFmpeg({ log: false });
