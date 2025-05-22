@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DEFAULT_PROMPT } from '../constants';
-import { Key, Wand2, Save } from 'lucide-react';
+import { Key, Wand2, Save, Info } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,11 +11,20 @@ import MainLayout from '@/components/layout/MainLayout';
 import { useAppContext } from '@/context/AppContext';
 import { useToast } from '@/hooks/use-toast';
 
+// Prüfe, ob eine Umgebungsvariable für den API-Schlüssel gesetzt ist
+const ENV_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
+
 const Settings = () => {
   const { apiKey, setApiKey, customPrompt, setCustomPrompt } = useAppContext();
   const [apiKeyInput, setApiKeyInput] = useState<string>(apiKey);
   const [customPromptInput, setCustomPromptInput] = useState<string>(customPrompt);
+  const [isUsingEnvKey, setIsUsingEnvKey] = useState<boolean>(false);
   const { toast } = useToast();
+
+  // Prüfe, ob ein API-Schlüssel aus der Umgebungsvariable verwendet wird
+  useEffect(() => {
+    setIsUsingEnvKey(!!ENV_API_KEY && apiKey === ENV_API_KEY);
+  }, [apiKey]);
 
   const handleSaveSettings = () => {
     setApiKey(apiKeyInput);
@@ -58,6 +67,15 @@ const Settings = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                {isUsingEnvKey && (
+                  <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+                    <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-blue-700">
+                      <p className="font-medium">API-Schlüssel aus Umgebungsvariable</p>
+                      <p>Ein API-Schlüssel wurde über die Umgebungsvariable VITE_OPENAI_API_KEY konfiguriert und wird automatisch verwendet.</p>
+                    </div>
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="apiKey">OpenAI API-Schlüssel</Label>
                   <Input
@@ -65,11 +83,15 @@ const Settings = () => {
                     type="password"
                     value={apiKeyInput}
                     onChange={(e) => setApiKeyInput(e.target.value)}
-                    placeholder="sk-..."
+                    placeholder={isUsingEnvKey ? "Schlüssel aus Umgebungsvariable wird verwendet" : "sk-..."}
                     className="glass-input"
+                    disabled={isUsingEnvKey}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Ihr API-Schlüssel wird sicher im lokalen Speicher Ihres Browsers gespeichert und niemals an unsere Server gesendet.
+                    {isUsingEnvKey 
+                      ? "Der API-Schlüssel ist über die Umgebungsvariable VITE_OPENAI_API_KEY konfiguriert."
+                      : "Ihr API-Schlüssel wird sicher im lokalen Speicher Ihres Browsers gespeichert und niemals an unsere Server gesendet."
+                    }
                   </p>
                 </div>
               </div>
@@ -115,6 +137,7 @@ const Settings = () => {
             <Button 
               onClick={handleSaveSettings} 
               className="gap-2"
+              disabled={isUsingEnvKey && apiKeyInput === ENV_API_KEY}
             >
               <Save className="h-4 w-4" />
               Einstellungen speichern

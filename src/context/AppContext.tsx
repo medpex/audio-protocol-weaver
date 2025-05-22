@@ -1,5 +1,9 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { DEFAULT_PROMPT } from '../constants';
+
+// Umgebungsvariable für den API-Schlüssel, falls verfügbar
+const ENV_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
 
 type TranscriptionStatus = 'idle' | 'uploading' | 'transcribing' | 'generating' | 'completed' | 'error';
 
@@ -36,7 +40,9 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [apiKey, setApiKey] = useState<string>(() => {
-    return localStorage.getItem('openai_api_key') || '';
+    // Priorisiere die Umgebungsvariable, falls vorhanden
+    const storedKey = localStorage.getItem('openai_api_key');
+    return ENV_API_KEY || storedKey || '';
   });
   
   const [customPrompt, setCustomPrompt] = useState<string>(() => {
@@ -66,7 +72,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Einstellungen im localStorage speichern
   useEffect(() => {
-    localStorage.setItem('openai_api_key', apiKey);
+    // Speichere den API-Schlüssel nur, wenn er vom Benutzer geändert wurde
+    // und nicht der voreingestellte Umgebungsvariablen-Schlüssel ist
+    if (apiKey !== ENV_API_KEY) {
+      localStorage.setItem('openai_api_key', apiKey);
+    }
   }, [apiKey]);
 
   useEffect(() => {
