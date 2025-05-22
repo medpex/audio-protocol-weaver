@@ -153,7 +153,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFileSelected, disabled = 
               <div className="relative flex items-center justify-center w-16 h-16 mb-2 bg-primary/10 rounded-full animate-float">
                 <Upload className="w-8 h-8 text-primary" />
               </div>
-              <h3 className="text-lg font-medium">Drag & drop deine Audiodatei</h3>
+              <h3 className="text-lg font-medium">Drag &amp; drop deine Audiodatei</h3>
               <p className="text-muted-foreground text-sm mb-2">
                 oder klicke, um eine Datei auszuwählen
               </p>
@@ -161,7 +161,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFileSelected, disabled = 
                 Unterstützt MP3, WAV, M4A, WEBM und andere Audioformate (max 1GB)
               </p>
               <p className="text-xs text-amber-500 mt-2">
-                Hinweis: Große Dateien (>700MB) werden automatisch aufgeteilt und können eine längere Verarbeitungszeit benötigen
+                Hinweis: Große Dateien (&gt;700MB) werden automatisch aufgeteilt und können eine längere Verarbeitungszeit benötigen
               </p>
             </>
           )}
