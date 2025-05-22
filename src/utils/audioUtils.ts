@@ -33,6 +33,14 @@ export const splitAudioFile = async (
   console.log(
     `Teile große Datei (${Math.round(file.size / (1024 * 1024))} MB) in Chunks unter ${maxSizeInMB} MB`
   );
+  maxDurationSec: number = 600 // ca. 10 Minuten pro Chunk
+): Promise<Blob[]> => {
+  // Für kleine Dateien keine Aufteilung nötig
+  if (file.size <= 25 * 1024 * 1024) {
+    return [file];
+  }
+
+  console.log(`Teile große Datei (${Math.round(file.size / (1024 * 1024))} MB) in zeitbasierte Chunks`);
 
   await loadFFmpeg();
 
@@ -90,6 +98,26 @@ export const splitAudioFile = async (
 
     segmentTime = Math.max(Math.floor(segmentTime / 2), 60); // mindestens 1 Minute
     attempts++;
+  await ffmpeg.run(
+    '-i', 'input.mp3',
+    '-f', 'segment',
+    '-segment_time', String(maxDurationSec),
+    '-c', 'copy',
+    'chunk_%03d.mp3'
+  );
+
+  const chunks: Blob[] = [];
+  let index = 0;
+  while (true) {
+    const name = `chunk_${index.toString().padStart(3, '0')}.mp3`;
+    try {
+      const data = ffmpeg.FS('readFile', name);
+      chunks.push(new File([data.buffer], name, { type: 'audio/mpeg' }));
+      ffmpeg.FS('unlink', name);
+      index++;
+    } catch {
+      break;
+    }
   }
 
   ffmpeg.FS('unlink', 'input.mp3');
