@@ -26,10 +26,6 @@ export const transcribeAudio = async (
     const audioChunks = await splitAudioFile(processedFile);
     if (onProgressUpdate) onProgressUpdate(12, `Datei in ${audioChunks.length} Chunks getrennt`);
     
-    // Teile die Datei in kleinere Stücke, falls sie zu groß ist
-    if (onProgressUpdate) onProgressUpdate(10, 'Teile Datei in Chunks...');
-    const audioChunks = await splitAudioFile(processedFile);
-    
     console.log(`Datei in ${audioChunks.length} Teile aufgeteilt`);
     
     // Wenn nur ein Chunk, führe normale Transkription durch
@@ -40,7 +36,6 @@ export const transcribeAudio = async (
     
     // Andernfalls transkribiere jeden Chunk einzeln und kombiniere die Ergebnisse
     const results: string[] = [];
-    let completedChunks = 0;
     
     // Sequentielles Transkribieren der Chunks, um Speicher zu sparen und API-Ratenlimits zu beachten
     for (let i = 0; i < audioChunks.length; i++) {
@@ -52,7 +47,6 @@ export const transcribeAudio = async (
       console.log(`Transkribiere Teil ${i + 1}/${audioChunks.length}...`);
       const chunkResult = await transcribeChunk(audioChunks[i], apiKey);
       results.push(chunkResult);
-      completedChunks++;
       
       // Gib Speicher frei zwischen den Chunks
       if (i < audioChunks.length - 1) {
