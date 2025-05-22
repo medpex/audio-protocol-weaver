@@ -26,6 +26,10 @@ export const transcribeAudio = async (
     const audioChunks = await splitAudioFile(processedFile);
     if (onProgressUpdate) onProgressUpdate(12, `Datei in ${audioChunks.length} Chunks getrennt`);
     
+    // Teile die Datei in kleinere Stücke, falls sie zu groß ist
+    if (onProgressUpdate) onProgressUpdate(10, 'Teile Datei in Chunks...');
+    const audioChunks = await splitAudioFile(processedFile);
+    
     console.log(`Datei in ${audioChunks.length} Teile aufgeteilt`);
     
     // Wenn nur ein Chunk, führe normale Transkription durch
