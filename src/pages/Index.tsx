@@ -22,6 +22,12 @@ const Index = () => {
   const [transcriptionText, setTranscriptionText] = useState<string>('');
   const [protocolText, setProtocolText] = useState<string>('');
   const [processingStep, setProcessingStep] = useState<'idle' | 'transcribing' | 'generating' | 'completed'>('idle');
+  const [progress, setProgress] = useState<number>(0);
+  const [logs, setLogs] = useState<string[]>([]);
+
+  const addLog = (message: string) => {
+    setLogs((prev) => [...prev, message]);
+  };
   
   const { 
     apiKey, 
@@ -36,11 +42,14 @@ const Index = () => {
 
   const handleFileSelected = (file: File) => {
     setSelectedFile(file);
-    
+
     // Reset everything when a new file is selected
     setTranscriptionText('');
     setProtocolText('');
     setProcessingStep('idle');
+    setProgress(0);
+    setLogs([]);
+    addLog(`Datei hochgeladen: ${file.name} (${(file.size / (1024*1024)).toFixed(2)} MB)`);
   };
 
   const handleTranscribe = async () => {
@@ -64,8 +73,12 @@ const Index = () => {
 
     try {
       setProcessingStep('transcribing');
-      
-      const transcription = await transcribeAudio(selectedFile, apiKey);
+      addLog('Starte Transkription...');
+
+      const transcription = await transcribeAudio(selectedFile, apiKey, (prog, msg) => {
+        setProgress(prog);
+        addLog(msg);
+      });
       setTranscriptionText(transcription);
       
       // Create a new item with the transcription
@@ -85,7 +98,8 @@ const Index = () => {
         title: "Transkription abgeschlossen",
         description: "Die Audio wurde erfolgreich transkribiert",
       });
-      
+
+      addLog('Transkription abgeschlossen');
       setProcessingStep('idle');
     } catch (error) {
       console.error('Transkriptionsfehler:', error);
@@ -96,6 +110,7 @@ const Index = () => {
         description: error instanceof Error ? error.message : "Ein unbekannter Fehler ist aufgetreten",
         variant: "destructive",
       });
+      addLog('Transkription fehlgeschlagen');
     }
   };
 
@@ -120,7 +135,8 @@ const Index = () => {
 
     try {
       setProcessingStep('generating');
-      
+      addLog('Erstelle Protokoll...');
+
       const protocol = await generateProtocol(transcriptionText, customPrompt, apiKey);
       setProtocolText(protocol);
       
@@ -138,7 +154,8 @@ const Index = () => {
         title: "Protokoll erstellt",
         description: "Das Besprechungsprotokoll wurde erfolgreich erstellt",
       });
-      
+
+      addLog('Protokoll erstellt');
       setProcessingStep('completed');
     } catch (error) {
       console.error('Fehler bei der Protokollerstellung:', error);
@@ -149,6 +166,7 @@ const Index = () => {
         description: error instanceof Error ? error.message : "Ein unbekannter Fehler ist aufgetreten",
         variant: "destructive",
       });
+      addLog('Protokollerstellung fehlgeschlagen');
     }
   };
 
@@ -275,15 +293,23 @@ const Index = () => {
 
             {renderApiKeyWarning()}
 
-            {(processingStep === 'transcribing' || processingStep === 'generating') && (
+            {progress > 0 && (
               <div className="mt-4">
-                <Progress value={processingStep === 'transcribing' ? 40 : 80} />
+                <Progress value={progress} />
               </div>
             )}
 
             <div className="mt-6 flex justify-center">
               {renderActionButtons()}
             </div>
+
+            {logs.length > 0 && (
+              <div className="mt-6 bg-black text-green-300 rounded-md p-3 h-40 overflow-y-auto font-mono text-xs">
+                {logs.map((log, idx) => (
+                  <div key={idx}>{log}</div>
+                ))}
+              </div>
+            )}
 
             {transcriptionText && !protocolText && (
               <div className="mt-8 space-y-2">

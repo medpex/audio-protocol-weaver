@@ -15,10 +15,16 @@ export const transcribeAudio = async (
 ): Promise<string> => {
   try {
     console.log('Starte Transkription für:', file.name, 'Größe:', Math.round(file.size / (1024 * 1024)), 'MB');
-    
+
     // Verarbeite die Audiodatei (Konvertierung etc. falls nötig)
-    if (onProgressUpdate) onProgressUpdate(5, 'Verarbeite Audiodatei...');
+    if (onProgressUpdate) onProgressUpdate(5, 'Datei wird in MP3 umgewandelt...');
     const processedFile = await processAudioFile(file);
+    if (onProgressUpdate) onProgressUpdate(8, processedFile === file ? 'Dateiformat ist kompatibel' : 'Umwandlung abgeschlossen');
+
+    // Teile die Datei in kleinere Stücke, falls sie zu groß ist
+    if (onProgressUpdate) onProgressUpdate(10, 'Teile Datei in Chunks...');
+    const audioChunks = await splitAudioFile(processedFile);
+    if (onProgressUpdate) onProgressUpdate(12, `Datei in ${audioChunks.length} Chunks getrennt`);
     
     // Teile die Datei in kleinere Stücke, falls sie zu groß ist
     if (onProgressUpdate) onProgressUpdate(10, 'Teile Datei in Chunks...');
@@ -55,7 +61,9 @@ export const transcribeAudio = async (
     }
     
     if (onProgressUpdate) onProgressUpdate(95, 'Kombiniere Transkriptionen...');
-    return combineTranscriptions(results);
+    const combined = combineTranscriptions(results);
+    if (onProgressUpdate) onProgressUpdate(100, 'Transkription abgeschlossen');
+    return combined;
     
   } catch (error) {
     console.error('Transkriptionsfehler:', error);
