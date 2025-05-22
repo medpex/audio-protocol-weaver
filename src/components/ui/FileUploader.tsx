@@ -79,7 +79,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFileSelected, disabled = 
       toast({
         title: "Sehr große Datei",
         description: "Die Verarbeitung kann einige Zeit dauern und mehr Ressourcen benötigen",
-        variant: "warning"
+        variant: "default"  // Changed from "warning" to "default" as "warning" is not a valid variant
       });
     }
     
